@@ -1,6 +1,6 @@
 # Dorazehi et al. (2026), MORC2 directs developmental CpG methylation patterns at active LINE-1 transposons
 
----
+
 ## DNA methylation analysis
 
 Basecalling and modified-base calling (for 5mC in CG context) was conducted using Dorado. 
@@ -28,7 +28,7 @@ bedtools sort -i <output.bedgraph> | cut -f 1-4 > <sorted.bedgraph>
 # creating the bigwig
 bedGraphToBigWig <sorted.bedgraph> <chrom_sizes> <output.bw>
 ```
----
+
 
 ## CUTandRun data processing
 
@@ -48,7 +48,7 @@ findPeaks <target_tagDir> -style histone -region -minDist 1000 -size 300 -o <out
 Called peaks were manually inspected in IGV, and additional filtering was applied as necessary 
 For more details about the filtering, as well as specific parameters and samples used as control, please refer to the publication.
 
----
+
 ## Heatmaps 
 Heatmaps of Cut&Run data, ATAC-seq data and DNA methylation data were created with DeepTools. 
 Example of code:
