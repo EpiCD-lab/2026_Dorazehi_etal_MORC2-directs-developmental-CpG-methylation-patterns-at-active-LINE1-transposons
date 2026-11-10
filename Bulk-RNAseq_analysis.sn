@@ -1,4 +1,5 @@
 configfile: "RNA-seq_configurations.yaml"
+# The configfile contains the list of sample IDs
 
 LOCATION = "path/to/fastq_files/"
 OUTPUT_DIR = "Output/"
