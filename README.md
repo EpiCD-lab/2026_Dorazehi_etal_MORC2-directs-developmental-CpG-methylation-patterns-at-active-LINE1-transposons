@@ -19,7 +19,7 @@ methylartist segmeth -b <modbam.bam> --motif CG --ref <hg38_ref.fasta> -i <regio
 ```
 
 
-Modkit and BedGraphToBigWig were used to create BigWig file used for visualisation through heatmaps and IGV. 
+Modkit and BedGraphToBigWig were used to create BigWig files used for visualisation through heatmaps (DeepTools) and IGV. 
 Example of code:
 
 ```bash
@@ -60,7 +60,7 @@ Peaks were annotated using a priority order specific to each peak type. Each pea
 4. Peaks not assigned to any of the categories above 
 ```
 
-- H3K4me3+/H3K9me3+ peaks:
+- H3K9me3-positive H3K4me3 peaks:
 For these peaks, L1 annotation was restricted to full-length elements from the youngest subfamilies, which are more likely to be transcriptionally active and carry the H3K4me3 mark.
 ```
 1. Selected young L1 elements (Full length L1HS, L1PA2, or L1PA3 - longer than 6 kb)
@@ -69,7 +69,7 @@ For these peaks, L1 annotation was restricted to full-length elements from the y
 4. Peaks not assigned to any of the categories above 
 ```
 
-Peak characterisation and visualisation was conducted in R.
+Peak characterisation and subsequent visualisation was conducted in R.
 
 ### Heatmaps 
 Heatmaps of Cut&Run data, ATAC-seq data and DNA methylation data were created with DeepTools. 
