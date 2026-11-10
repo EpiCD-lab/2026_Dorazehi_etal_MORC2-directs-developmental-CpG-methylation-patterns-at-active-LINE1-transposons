@@ -1,0 +1,126 @@
+configfile: "RNA-seq_configurations.yaml"
+
+LOCATION = "path/to/fastq_files/"
+OUTPUT_DIR = "Output/"
+SAMPLES = config["Samples"]
+rule all:
+	input:
+		"QC/multiqc_report.html",
+		expand("Output/Multi/{SAMPLE}_Aligned.sortedByCoord.out.bam", SAMPLE = SAMPLES),
+		expand("Output/Multi/{SAMPLE}_Aligned.sortedByCoord.out.bw", SAMPLE = SAMPLES)
+
+
+##QUALITY CONTROL
+#Perform QC on MORC2 and TASOR knock-downs on hNPCs
+rule FastQC:
+	input:
+		first = LOCATION + "{SAMPLE}_R1_001.fastq.gz",
+		second = LOCATION + "{SAMPLE}_R2_001.fastq.gz"
+	output:
+		first = "QC/{SAMPLE}_R1_001_fastqc.zip",
+		second = "QC/{SAMPLE}_R2_001_fastqc.zip"
+	shell:
+		"""
+		ml FastQC/0.11.8-Java-11
+		fastqc {input.first} -t 6 -o QC/
+		fastqc {input.second} -t 6 -o QC/
+		"""
+
+rule MultiQC:
+	input:
+		first = expand("QC/{SAMPLE}_R1_001_fastqc.zip", SAMPLE = SAMPLES),
+		second = expand("QC/{SAMPLE}_R2_001_fastqc.zip", SAMPLE = SAMPLES)
+	output:
+		"QC/multiqc_report.html"
+	shell:
+		"""
+		ml icc/2017.4.196-GCC-6.4.0-2.28 impi/2017.3.196 MultiQC/1.2-Python-2.7.14
+		multiqc {input.first} {input.second} -o QC/
+		module purge
+		"""
+
+# Performing Unique and Multi mapping using STAR
+rule Unique_Mapping:
+	input:
+		first = LOCATION + "{SAMPLE}_R1_001.fastq.gz",
+		second = LOCATION + "{SAMPLE}_R2_001.fastq.gz"
+	params:
+		index = "indicies/star/human/hg38/",
+		sjdbg = "gencode.v38.annotation.gtf"
+	output:
+		"Output/Unique/{SAMPLE}_Aligned.sortedByCoord.out.bam"
+	shell:
+		"""
+		ml GCC/5.4.0-2.26 OpenMPI/1.10.3 STAR/2.6.0c
+		STAR --readFilesCommand gunzip -c \
+		--runThreadN 20 \
+		--limitBAMsortRAM 3862214135 \
+		--outSAMattributes All \
+		--outSAMtype BAM SortedByCoordinate \
+		--sjdbGTFfile {params.sjdbg} \
+		--genomeDir {params.index} \
+		--outFileNamePrefix Output/Unique/{wildcards.SAMPLE}_ \
+		--outFilterMultimapNmax 1 --outFilterMismatchNoverLmax 0.03 \
+		--readFilesIn {input.first} {input.second}
+		module purge
+		"""
+
+rule Multi_Mapping:
+	input:
+		unique = "Output/Unique/{SAMPLE}_Aligned.sortedByCoord.out.bam",
+		first = LOCATION + "{SAMPLE}_R1_001.fastq.gz",
+		second = LOCATION + "{SAMPLE}_R2_001.fastq.gz"
+	params:
+		index = "indicies/star/human/hg38/",
+		sjdbg = "gencode.v38.annotation.gtf"
+	output:
+		"Output/Multi/{SAMPLE}_Aligned.sortedByCoord.out.bam"
+	shell:
+		"""
+		ml GCC/5.4.0-2.26 OpenMPI/1.10.3 STAR/2.6.0c
+		STAR --readFilesCommand gunzip -c \
+		--runThreadN 20 \
+		--limitBAMsortRAM 4284346457 \
+		--outSAMattributes All \
+		--outSAMtype BAM SortedByCoordinate \
+		--sjdbGTFfile {params.sjdbg} \
+		--genomeDir {params.index} \
+		--outFileNamePrefix Output/Multi/{wildcards.SAMPLE}_ \
+		--outFilterMultimapNmax 100 --winAnchorMultimapNmax 200 \
+		--readFilesIn {input.first} {input.second}
+		module purge
+		"""
+
+
+## INDEXING and CONVERTING BAM to BW for browsing on UCSC
+rule Index_Bam:
+	input:
+		UN = "Output/Unique/{SAMPLE}_Aligned.sortedByCoord.out.bam",
+		MU = "Output/Multi/{SAMPLE}_Aligned.sortedByCoord.out.bam",
+	output:
+		UN = "Output/Unique/{SAMPLE}_Aligned.sortedByCoord.out.bam.bai",
+		MU = "Output/Multi/{SAMPLE}_Aligned.sortedByCoord.out.bam.bai",
+	shell:
+		"""
+		ml GCC/7.3.0-2.30 SAMtools/1.9
+		samtools index -b {input.UN} {output.UN}
+		samtools index -b {input.MU} {output.MU}
+		module purge
+		"""
+
+rule BAMtoBW:
+	input:
+		index = "Output/Unique/{SAMPLE}_Aligned.sortedByCoord.out.bam.bai",
+		UN = "Output/Unique/{SAMPLE}_Aligned.sortedByCoord.out.bam",
+		MU = "Output/Multi/{SAMPLE}_Aligned.sortedByCoord.out.bam",
+	output:
+		UN = "Output/Unique/{SAMPLE}_Aligned.sortedByCoord.out.bw",
+		MU = "Output/Multi/{SAMPLE}_Aligned.sortedByCoord.out.bw",
+	params:
+		normalize = "normalizeUsingRPKM"
+	shell:
+		"""
+		ml GCC/5.4.0-2.26  OpenMPI/1.10.3 Python/3.5.2
+		bamCoverage -b {input.MU} -o {output.MU} --{params.normalize}
+		bamCoverage -b {input.UN} -o {output.UN} --{params.normalize}
+		"""

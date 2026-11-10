@@ -1,0 +1,94 @@
+## Pipeline Configurations
+
+LOCATION = "path/to/fastqs/"
+configfile: "CUTandRUN_configurations.yaml"
+SAMPLES = config["Samples"]
+
+rule all:
+	input:
+		expand("Output/{SAMPLE}.bw", SAMPLE = SAMPLES)
+
+
+##QUALITY CONTROL on the samples was already performed (found at the directory of the files)
+## MAPPING with Bowtie2
+rule Bowtie2_Mapping:
+	input:
+		forward = LOCATION + "{SAMPLE}_R1_001.fastq.gz",
+		reverse = LOCATION + "{SAMPLE}_R2_001.fastq.gz"
+	output:
+		"Output/{SAMPLE}.sam"
+	params:
+		index="indicies/bowtie2/human/hg38/hg38",
+		parameters="--local --very-sensitive-local --no-unal --no-mixed --no-discordant --phred33 -I 10 -X 700"	
+	shell:
+		"""
+		ml GCC/7.3.0-2.30 OpenMPI/3.1.1 Bowtie2/2.3.4.2
+		bowtie2 {params.parameters} -x {params.index} -1 {input.forward} -2 {input.reverse} -S {output}
+		module purge
+		"""
+
+## Transforming SAMs to binary files - BAMs. Further filtering them according to their mapping quality (MAPQ >= 10) 
+## to get reads with higher quality when working with Transposable Elements
+rule SAMtoBAM:
+	input:
+		"Output/{SAMPLE}.sam"
+	output:
+		BAM = "Output/{SAMPLE}.bam",
+		FILTERED_BAM = "Output/FilteredBAMs/{SAMPLE}_mapq10.bam"
+	shell:
+		"""
+		ml GCC/7.3.0-2.30 SAMtools/1.9
+		samtools view -bS {input} > {output.BAM}
+		samtools view -bq 10 {output.BAM} > {output.FILTERED_BAM}
+		module purge
+		"""
+
+##Preparing the TE intersections for BigWig transformation as done before
+rule Sort_BAMs:
+	input:
+		MultiMap = "Output/{SAMPLE}.bam",
+		Filtered = "Output/FilteredBAMs/{SAMPLE}_mapq10.bam"
+	output:
+		MultiMap = "Output/{SAMPLE}.sorted.bam",
+		Filtered = "Output/FilteredBAMs/{SAMPLE}_mapq10.sorted.bam"
+	shell:
+		"""
+		ml GCC/7.3.0-2.30 SAMtools/1.9
+		samtools sort -o {output.MultiMap} {input.MultiMap}
+		samtools sort -o {output.Filtered} {input.Filtered}
+		module purge
+		"""
+
+rule Index_BAMs:
+	input:
+		MultiMap = "Output/{SAMPLE}.sorted.bam",
+		Filtered = "Output/FilteredBAMs/{SAMPLE}_mapq10.sorted.bam"
+	output:
+		MultiMap = "Output/{SAMPLE}.sorted.bam.bai",
+		Filtered = "Output/FilteredBAMs/{SAMPLE}_mapq10.sorted.bam.bai"
+	shell:
+		"""
+		ml GCC/7.3.0-2.30 SAMtools/1.9
+		samtools index -b {input.MultiMap}
+		samtools index -b {input.Filtered}
+		module purge
+		"""
+
+#Transforming the BAMs to BigWigs
+rule BamtoBigwig:
+	input:
+		"Output/{SAMPLE}.sorted.bam.bai",
+		Multi_BAM = "Output/{SAMPLE}.sorted.bam",
+		Unique_BAM = "Output/FilteredBAMs/{SAMPLE}_mapq10.sorted.bam"
+	output:
+		Multi_BW = "Output/{SAMPLE}.bw",
+		Unique_BW = "Output/FilteredBAMs/{SAMPLE}_mapq10.bw"
+	params:
+		normalize="normalizeUsingRPKM"
+	shell:
+		"""
+		ml GCC/5.4.0-2.26  OpenMPI/1.10.3 Python/3.5.2
+		bamCoverage -b {input.Multi_BAM} -o {output.Multi_BW} --{params.normalize}
+		bamCoverage -b {input.Unique_BAM} -o {output.Unique_BW} --{params.normalize}
+		module purge
+		"""
