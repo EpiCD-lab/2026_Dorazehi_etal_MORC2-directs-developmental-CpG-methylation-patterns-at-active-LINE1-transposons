@@ -14,7 +14,8 @@ Example of code:
 ```bash
 featureCounts -s2 -F GTF -g gene_id -a <genome_annotation.gtf> -o <output.csv> <input.bam>
 ```
-The subsequent differential expression analysis was conducted in R using the package DESeq2.
+The subsequent differential expression analysis was conducted in R using the package DESeq2. 
+An example of the DESeq2 analysis workflow can be found in *Bulk_RNAseq_DEA_DESeq2_example.Rmd*. 
 
 
 ## DNA methylation analysis
