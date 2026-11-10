@@ -32,7 +32,7 @@ bedGraphToBigWig <sorted.bedgraph> <chrom_sizes> <output.bw>
 ```
 
 
-## CUTandRun data processing
+## CUT&Run data processing
 
 ### Peak calling
 
@@ -47,7 +47,7 @@ makeTagDirectory <output_tag_dir> <bam>
 # Peak calling over the control background
 findPeaks <target_tagDir> -style histone -region -minDist 1000 -size 300 -o <output_peaks_list.txt> -i <control_tagDir>
 ```
-Called peaks were manually inspected in IGV, and additional filtering was applied as necessary 
+Called peaks were manually inspected in IGV, and additional filtering was applied as necessary. 
 For more details about the filtering, as well as specific parameters and samples used as control, please refer to the publication.
 
 ### Peak characterisation
