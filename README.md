@@ -69,6 +69,8 @@ For these peaks, L1 annotation was restricted to full-length elements from the y
 4. Peaks not assigned to any of the categories above 
 ```
 
+Peak characterisation and visualisation was conducted in R.
+
 ### Heatmaps 
 Heatmaps of Cut&Run data, ATAC-seq data and DNA methylation data were created with DeepTools. 
 Example of code:
