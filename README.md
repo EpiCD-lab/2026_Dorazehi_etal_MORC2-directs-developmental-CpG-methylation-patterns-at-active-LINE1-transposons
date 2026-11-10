@@ -1,5 +1,6 @@
 # Dorazehi et al. (2026), MORC2 directs developmental CpG methylation patterns at active LINE-1 transposons
 
+## Bulk RNA-seq data analysis
 
 ## DNA methylation analysis
 
@@ -16,6 +17,7 @@ Example of code:
 ```bash
 methylartist segmeth -b <modbam.bam> --motif CG --ref <hg38_ref.fasta> -i <region.bed>
 ```
+
 
 Modkit and BedGraphToBigWig were used to create BigWig file used for visualisation through heatmaps and IGV. 
 Example of code:
@@ -48,8 +50,26 @@ findPeaks <target_tagDir> -style histone -region -minDist 1000 -size 300 -o <out
 Called peaks were manually inspected in IGV, and additional filtering was applied as necessary 
 For more details about the filtering, as well as specific parameters and samples used as control, please refer to the publication.
 
+### Peak characterisation
 
-## Heatmaps 
+Peaks were annotated using a priority order specific to each peak type. Each peak received a single annotation: if it matched multiple categories, it was assigned to the first matching category in the order below.
+- MORC2 peaks:
+```
+1. All L1 elements
+2. Peaks overlapping gene regions
+4. Peaks not assigned to any of the categories above 
+```
+
+- H3K4me3+/H3K9me3+ peaks:
+For these peaks, L1 annotation was restricted to full-length elements from the youngest subfamilies, which are more likely to be transcriptionally active and carry the H3K4me3 mark.
+```
+1. Selected young L1 elements (Full length L1HS, L1PA2, or L1PA3 - longer than 6 kb)
+2. Transcript promoter windows
+3. Other annotated repeats
+4. Peaks not assigned to any of the categories above 
+```
+
+### Heatmaps 
 Heatmaps of Cut&Run data, ATAC-seq data and DNA methylation data were created with DeepTools. 
 Example of code:
 
@@ -64,3 +84,4 @@ plotHeatmap -m <output_matrix> --sortRegions descend --plotFileFormat pdf --kmea
 ---
 
 For more information on specific parameters and/or version of the bioinformatic tools, please refer to the publication.
+All subsequent R analyses and visualisation where conduction in RStudio 2024.09.1+394 (R v4.4.2).
