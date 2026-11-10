@@ -2,12 +2,27 @@
 
 ## Bulk RNA-seq data analysis
 
+### FastQ file processing
+Bulk RNA-seq FastQ files were processed using the Snakemake pipeline *Bulk-RNAseq_analysis.sn*. 
+The pipeline was run using:
+```bash
+snakemake -s Bulk-RNAseq_analysis.sn -j 6 --latency-wait 120 --rerun-incomplete
+```
+### Read count
+Reads were counted using FeatureCounts. 
+Example of code:
+```bash
+featureCounts -s2 -F GTF -g gene_id -a <genome_annotation.gtf> -o <output.csv> <input.bam>
+```
+The subsequent differential expression analysis was conducted in R using the package DESeq2.
+
+
 ## DNA methylation analysis
 
 Basecalling and modified-base calling (for 5mC in CG context) was conducted using Dorado. 
 Example of code:
 ```bash
-dorado basecaller dna_r10.4.1_e8.2_400bps_sup@v4.3.0 --modified-bases-models dna_r10.4.1_e8.2_400bps_sup@v4.3.0_5mCG_5hmCG@v --reference <hg38_ref.fasta> > <output.bam>
+dorado basecaller dna_r10.4.1_e8.2_400bps_sup@v4.3.0 --modified-bases-models dna_r10.4.1_e8.2_400bps_sup@v4.3.0_5mCG_5hmCG@v --reference <hg38_ref.fasta> <input.pod5> > <output.bam>
 ```
 
 
@@ -33,6 +48,14 @@ bedGraphToBigWig <sorted.bedgraph> <chrom_sizes> <output.bw>
 
 
 ## CUT&Run data processing
+
+### FastQ file processing
+
+FastQ files were processed using the Snakemake pipeline *CUT_and_RUN_analysis.sn*. 
+The pipeline was run using:
+```bash
+snakemake -s CUT_and_RUN_analysis.sn -j 6 --latency-wait 120 --rerun-incomplete
+```
 
 ### Peak calling
 
