@@ -65,7 +65,7 @@ Example of code:
 
 ```bash
 # Creation of tag directories for both control and target samples
-makeTagDirectory <output_tag_dir> <bam>
+makeTagDirectory <output_tag_dir> <input.bam>
 ```
 ```bash
 # Peak calling over the control background
