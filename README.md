@@ -110,4 +110,4 @@ plotHeatmap -m <output_matrix> --sortRegions descend --plotFileFormat pdf --kmea
 ---
 
 For more information on specific parameters and/or version of the bioinformatic tools, please refer to the publication.
-All subsequent R analyses and visualisation where conduction in RStudio 2024.09.1+394 (R v4.4.2).
+All subsequent R analyses and visualisation were conduction in RStudio 2024.09.1+394 (R v4.4.2).
