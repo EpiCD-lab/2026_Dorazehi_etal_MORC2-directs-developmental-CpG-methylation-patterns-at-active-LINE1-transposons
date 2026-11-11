@@ -107,6 +107,9 @@ plotHeatmap -m <output_matrix> --sortRegions descend --plotFileFormat pdf -o <ou
 plotHeatmap -m <output_matrix> --sortRegions descend --plotFileFormat pdf --kmeans 2 --clusterUsingSamples <sample to base the clustering on> -o <output.pdf>
 ```
 
+## Single nucleus RNA-seq data analysis
+All single nucleus RNA-seq FastQ and subsequent files were processed using cellRanger as specified in *snRNAseq_Seurat_Processing.R*.
+
 ---
 
 For more information on specific parameters and/or version of the bioinformatic tools, please refer to the publication.
